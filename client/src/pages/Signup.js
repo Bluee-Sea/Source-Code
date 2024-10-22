@@ -1,10 +1,15 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import BLUEESEA_IMG from '../images/blueesea-logo.png'
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import { ToastContainer, toast } from 'react-toastify'; // Import toast and ToastContainer
+import 'react-toastify/dist/ReactToastify.css'; // Import react-toastify styles
+import BLUEESEA_IMG from '../images/blueesea-logo.png';
+import { signupUser } from '../api'; // Import the API function
 
 const Signup = () => {
-  // Formik and Yup for form validation
+  const navigate = useNavigate(); // useNavigate hook for redirection
+
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -26,9 +31,26 @@ const Signup = () => {
         .required('Confirm Password is required'),
       termsAccepted: Yup.boolean().oneOf([true], 'You must accept the Terms of Service'),
     }),
-    onSubmit: (values) => {
-      // Handle form submission logic here
-      console.log(values);
+    onSubmit: async (values) => {
+      try {
+        // Call the signupUser function from the API
+        const response = await signupUser({
+          name: values.name,
+          email: values.email,
+          contactNumber: values.contactNumber,
+          password: values.password,
+          termsAccepted: values.termsAccepted,
+        });
+
+        // Show success toast and redirect to login
+        toast.success('Registration successful! Redirecting to login...', {
+          onClose: () => navigate('/login'), // Redirect to login after toast is closed
+        });
+      } catch (error) {
+        // Show error toast
+        toast.error(error?.response?.data?.error || 'Registration failed. Please try again.');
+        console.error('Signup failed:', error);
+      }
     },
   });
 
@@ -121,7 +143,7 @@ const Signup = () => {
               onBlur={formik.handleBlur}
             />
             <span className="ml-2 text-sm text-gray-600">
-              I have read and accept the <a href="#" className="text-blue-500">Terms of Service</a> and <a href="#" className="text-blue-500">Privacy Policy</a>. I may receive service-related phone calls to the number provided to help me understand important details about the blueesea.
+              I have read and accept the <a href="#" className="text-blue-500">Terms of Service</a> and <a href="#" className="text-blue-500">Privacy Policy</a>.
             </span>
           </label>
           {formik.touched.termsAccepted && formik.errors.termsAccepted && <div className="text-red-500 text-sm mb-4">{formik.errors.termsAccepted}</div>}
@@ -135,6 +157,9 @@ const Signup = () => {
           <p className="text-gray-600 text-sm">Already have an account? <a href="/login" className="text-blue-500">Sign In</a>.</p>
         </div>
       </div>
+
+      {/* Toast notifications */}
+      <ToastContainer />
     </div>
   );
 };

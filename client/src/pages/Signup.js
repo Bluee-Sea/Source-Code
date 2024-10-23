@@ -39,6 +39,7 @@ const Signup = () => {
           email: values.email,
           contactNumber: values.contactNumber,
           password: values.password,
+          confirmPassword: values.confirmPassword,
           termsAccepted: values.termsAccepted,
         });
 
